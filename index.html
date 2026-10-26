@@ -251,6 +251,7 @@ details.add summary{font-style:italic;font-weight:500;font-size:1.1rem}
 <script src="lib/d3-array.min.js"></script>
 <script src="lib/d3-geo.min.js"></script>
 <script src="lib/topojson-client.min.js"></script>
+<script src="config.js"></script>
 <script>
 const COURSE_COLORS = {anatomy:'var(--c-anatomy)', chemistry:'var(--c-chemistry)', microbiology:'var(--c-microbiology)'};
 const cc = c => COURSE_COLORS[(c||'').toLowerCase()] || 'var(--c-other)';
@@ -265,7 +266,7 @@ const mondayOf = d => { const x = new Date(d); x.setDate(x.getDate() - ((x.getDa
 const num = v => v === '' || v == null || isNaN(Number(v)) ? null : Number(v);
 
 const state = { a: [], t: [], ready: { a:false, t:false }, db: null, downloads: null, noDb: false,
-  cal: { status:'loading', events:[], code:null, storedAt:null }, mcp: null, c: [],
+  cal: { status:'loading', events:[], code:null, storedAt:null }, c: [],
   course: 'All', status: 'todo' };
 
 function toast(msg){ const el = document.getElementById('toast'); el.textContent = msg; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 3200); }
@@ -296,7 +297,7 @@ function bar(title){
   return `<div class="bar"><a class="home-link" href="#home">← Home</a>${title}</div>`;
 }
 function loadingOr(key, html){
-  if (state.noDb) return `<div class="empty">Your saved data isn't available in this view. Open the page in claude.ai while signed in to see and edit it.</div>`;
+  if (state.noDb) return `<div class="empty">Your data couldn’t load. If you opened index.html straight from a folder, serve it instead (see README) or open the GitHub Pages site.</div>`;
   if (!state.ready[key]) return `<div class="empty">Loading your ${key === 'a' ? 'assignments' : 'trips'}…</div>`;
   return html;
 }
@@ -331,7 +332,6 @@ function viewHome(){
 }
 
 /* ---------- google calendar (home) ---------- */
-const GCAL = 'Google Calendar';
 const evStart = e => { if (e.start?.dateTime) return new Date(e.start.dateTime); if (!e.start?.date) return null; const [y,m,d] = e.start.date.split('-').map(Number); return new Date(y, m-1, d); };
 const evTime = e => e.start?.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) : 'All day';
 const evColor = e => { const t = (e.summary || '').toLowerCase(); const k = Object.keys(COURSE_COLORS).find(c => t.includes(c)); return k ? COURSE_COLORS[k] : 'var(--accent)'; };
@@ -339,19 +339,16 @@ function viewCalendar(){
   const c = state.cal;
   const link = `<a class="go" href="https://calendar.google.com/calendar/r/week" target="_blank" rel="noopener">Open Google Calendar ↗</a>`;
   let body;
-  if (c.status === 'off') body = `<div class="cal-note">Your calendar shows here when this planner is open in claude.ai while signed in.</div>`;
+  if (c.status === 'off') body = `<div class="cal-note">Add your Google OAuth Client ID to config.js to show your calendar here. The README walks through it.</div>`;
   else if (c.status === 'loading') body = `<div class="cal-note">Loading this week’s events…</div>`;
+  else if (c.status === 'signin') body = `<div class="cal-note"><span>${c.code === 'expired' ? 'Your Google sign-in expired.' : 'Connect your Google account to see this week here.'}</span><button class="btn primary" data-act="cal-allow">${c.code === 'expired' ? 'Reconnect Google Calendar' : 'Connect Google Calendar'}</button></div>`;
   else if (c.status === 'error') {
     const msg = {
-      needs_reauth: 'Google Calendar needs to be reconnected. Reconnect it in claude.ai Settings → Connectors, then reload.',
-      server_not_connected: 'Google Calendar isn’t connected. Add it in claude.ai Settings → Connectors, then reload.',
-      selection_required: 'You have more than one Google Calendar connector. Pick one when claude.ai asks, then reload.',
-      not_in_manifest: 'Google Calendar is turned off for this planner. Turn it on from the artifact’s Permissions menu.',
-      blocked_by_policy: 'Your organization’s settings block Google Calendar here.',
-      approval_required: 'The planner needs your OK to read Google Calendar.',
+      denied: 'Google Calendar access wasn’t granted.',
+      no_gis: 'Google sign-in couldn’t load. Check your connection or ad blocker, then reload.',
       server_unavailable: 'Google Calendar didn’t answer just now. It will try again shortly.',
     }[c.code] || 'Couldn’t load your calendar right now.';
-    body = `<div class="cal-note"><span>${esc(msg)}</span>${c.code === 'approval_required' ? `<button class="btn primary" data-act="cal-allow">Show my calendar</button>` : ''}</div>`;
+    body = `<div class="cal-note"><span>${esc(msg)}</span>${c.code === 'denied' ? `<button class="btn primary" data-act="cal-allow">Try again</button>` : ''}</div>`;
   } else if (!c.events.length) body = `<div class="cal-note">Nothing on your calendar for the next 7 days.</div>`;
   else {
     const days = [];
@@ -375,18 +372,55 @@ function viewCalendar(){
     ${link}
   </section>`;
 }
-const CAL_INPUT = { orderBy: 'startTime', pageSize: 40 };
-function calResult(res){
-  const p = res?.payload || {};
-  state.cal = { status: 'ok', events: (p.events || []).filter(e => e.status !== 'cancelled'), code: null, storedAt: res?.cache?.storedAt || null };
+// Reads the primary calendar straight from the Google Calendar API, signing in with Google Identity Services.
+const GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
+const GCAL_TOKEN = 'planner-gcal-token';
+const gcal = { client: null, token: null, timer: null };
+try { const t = JSON.parse(sessionStorage.getItem(GCAL_TOKEN)); if (t && t.exp > Date.now()) gcal.token = t; } catch {}
+function calSet(status, code = null){ state.cal = { status, events: [], code, storedAt: null }; render(); }
+function calResult(events){
+  state.cal = { status: 'ok', events: events.filter(e => e.status !== 'cancelled'), code: null, storedAt: Date.now() };
   render();
 }
-function calError(err){
-  const deny = ['needs_reauth','server_not_connected','blocked_by_policy','approval_required','not_in_manifest','selection_required','not_granted','capability_disabled','capability_removed'];
-  if (['not_granted','capability_disabled','capability_removed'].includes(err?.code)) { state.cal = { status:'off', events:[], code:null, storedAt:null }; render(); return; }
-  if (state.cal.status === 'ok' && !deny.includes(err?.code)) return; // keep last good data on transient errors
-  state.cal = { status: 'error', events: [], code: err?.code || 'upstream_error', storedAt: null };
-  render();
+function calError(code){
+  if (state.cal.status === 'ok' && code === 'server_unavailable') return; // keep last good data on transient errors
+  calSet('error', code);
+}
+async function calFetch(){
+  if (!gcal.token || gcal.token.exp <= Date.now()) { calSet('signin', gcal.token ? 'expired' : null); return; }
+  const q = new URLSearchParams({ timeMin: today.toISOString(), timeMax: new Date(+today + 7*DAY).toISOString(),
+    singleEvents: 'true', orderBy: 'startTime', maxResults: '40' });
+  try {
+    const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?' + q, { headers: { Authorization: 'Bearer ' + gcal.token.value } });
+    if (res.status === 401) { gcal.token = null; try { sessionStorage.removeItem(GCAL_TOKEN); } catch {} calSet('signin', 'expired'); return; }
+    if (!res.ok) throw new Error(res.status);
+    calResult((await res.json()).items || []);
+  } catch (e) { calError('server_unavailable'); }
+}
+function calConnect(){
+  if (!gcal.client) { calError('no_gis'); return; }
+  gcal.client.requestAccessToken({ prompt: '' });
+}
+function calInit(){
+  const clientId = window.PLANNER_CONFIG?.googleClientId;
+  if (!clientId) { calSet('off'); return; }
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
+  s.onerror = () => calError('no_gis');
+  s.onload = () => {
+    gcal.client = google.accounts.oauth2.initTokenClient({ client_id: clientId, scope: GCAL_SCOPE,
+      callback: r => {
+        if (r.error) { calError('denied'); return; }
+        gcal.token = { value: r.access_token, exp: Date.now() + (r.expires_in - 60) * 1000 };
+        try { sessionStorage.setItem(GCAL_TOKEN, JSON.stringify(gcal.token)); } catch {}
+        calFetch();
+      },
+      error_callback: () => calError('denied') });
+    calFetch();
+  };
+  document.head.appendChild(s);
+  clearInterval(gcal.timer);
+  gcal.timer = setInterval(() => { if (gcal.token) calFetch(); }, 300000);
 }
 
 function viewAssignments(){
@@ -435,7 +469,7 @@ function viewAssignments(){
     </div>`;
   };
 
-  return `${bar(`<button class="btn" data-act="csv-a" ${state.downloads ? '' : 'hidden'}>Download CSV</button>`)}
+  return `${bar(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="reseed" data-v="assignments">Reset from CSV</button><button class="btn" data-act="csv-a" ${state.downloads ? '' : 'hidden'}>Download CSV</button></span>`)}
   <header style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">Fall 2026</span><h1>Assignment Tracker</h1></header>
   ${loadingOr('a', `
   <div class="stats">
@@ -495,7 +529,7 @@ function viewTravel(){
     return `<div class="leg" data-id="${esc(l.id)}"><div class="leg-date"><b>${esc(fmt(d, {month:'short', day:'numeric'}))}</b>${esc(fmt(d, {weekday:'short'}))}</div><div style="min-width:0;display:flex;flex-direction:column;gap:4px">${main}</div><button class="x" data-act="del-t" title="Delete" aria-label="Delete ${esc(l.title)}">✕</button></div>`;
   };
   const tripNames = trips.map(t => t.trip);
-  return `${bar(`<button class="btn" data-act="csv-t" ${state.downloads ? '' : 'hidden'}>Download CSV</button>`)}
+  return `${bar(`<span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="reseed" data-v="travel">Reset from CSV</button><button class="btn" data-act="csv-t" ${state.downloads ? '' : 'hidden'}>Download CSV</button></span>`)}
   <header style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">Fall 2026</span><h1>Travel Logistics</h1></header>
   ${loadingOr('t', `
   ${viewWorld()}
@@ -676,9 +710,12 @@ document.addEventListener('click', async e => {
     const name = b.dataset.v;
     await setVisited(name, act === 'map' ? !countryStatus().visited.has(name) : false);
   }
-  else if (act === 'cal-allow' && state.mcp) {
-    b.disabled = true;
-    try { calResult(await state.mcp.callTool(GCAL, 'list_events', CAL_INPUT)); } catch(err){ calError(err); }
+  else if (act === 'cal-allow') calConnect();
+  else if (act === 'reseed') {
+    if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Replace my edits?'; setTimeout(() => { if (b.isConnected) { b.classList.remove('armed'); b.textContent = 'Reset from CSV'; } }, 3000); return; }
+    const col = b.dataset.v;
+    try { state.db.replace(col, await loadCsv(col)); toast('Reloaded from ' + CSV_FILES[col]); }
+    catch(err){ toast('Couldn’t read ' + CSV_FILES[col] + '.'); }
   }
   else if (act === 'csv-a') saveCsv('Assignment Tracker - Assignments.csv', csvAssignments());
   else if (act === 'csv-t') saveCsv('travel.csv', csvTravel());
@@ -730,26 +767,92 @@ function csvTravel(){
 }
 async function saveCsv(filename, data){
   try { await state.downloads.save({ filename, data }); toast('Saved ' + filename); }
-  catch(e){ if (e?.code !== 'declined') toast('Couldn’t save the file here.'); }
+  catch(e){ toast('Couldn’t save the file here.'); }
+}
+const browserDownloads = { save({ filename, data }){
+  const url = URL.createObjectURL(new Blob([data], { type: 'text/csv' }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: filename });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+} };
+
+/* ---------- CSV import (seeds the planner on first visit) ---------- */
+const CSV_FILES = { assignments: 'data/assignments.csv', travel: 'data/travel.csv' };
+function parseCsv(text){
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i+1] === '"') { f += '"'; i++; } else q = false; } else f += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ',') { row.push(f); f = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i+1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += ch;
+  }
+  if (f || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+function csvRecords(text, firstCol){
+  const rows = parseCsv(text), h = rows.findIndex(r => r.map(c => c.trim()).includes(firstCol));
+  if (h < 0) return [];
+  const head = rows[h].map(c => c.trim());
+  return rows.slice(h + 1).map(r => Object.fromEntries(head.map((k, i) => [k, (r[i] || '').trim()])));
+}
+const CSV_MAP = {
+  assignments: (text) => csvRecords(text, 'Assignment').filter(r => r.Assignment).map((r, i) => ({
+    assignment: r.Assignment, course: r.Course, due: r['Due Date'], scheduled: r['Scheduled Completion Date'],
+    submitted: /^true$/i.test(r['Submitted?']), earned: r['Points Earned'], possible: r['Points Possible'], order: i + 1 })),
+  travel: (text) => csvRecords(text, 'Trip').filter(r => r.Trip || r.Title).map((r, i) => ({
+    trip: r.Trip, category: r.Category, title: r.Title, date: r.Date, endDate: r['End Date'], time: r.Time,
+    arrival: r['Arrival Time'], location: r.Location, details: r.Details, order: i + 1 })),
+};
+async function loadCsv(col){
+  const res = await fetch(CSV_FILES[col], { cache: 'no-cache' });
+  if (!res.ok) throw new Error(res.status);
+  return CSV_MAP[col](await res.text());
+}
+
+/* ---------- local store: same shape as the claude.ai db, saved in this browser ---------- */
+function localDb(){
+  const KEY = 'planner-data-v1';
+  let data = null, warned = false;
+  try { data = JSON.parse(localStorage.getItem(KEY)); } catch {}
+  data = data && typeof data === 'object' ? data : {};
+  const subs = {};
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(data)); }
+    catch { if (!warned) { warned = true; toast('This browser won’t save changes. They’ll be lost when you close the page.'); } } };
+  const emit = col => { const docs = Object.entries(data[col] || {}).map(([id, v]) => ({ id, data: () => v })); (subs[col] || []).forEach(cb => cb({ docs })); };
+  const commit = col => { persist(); emit(col); };
+  const docRef = path => { const [col, id] = path.split('/'); return {
+    set: async v => { (data[col] ??= {})[id] = { ...v }; commit(col); },
+    update: async v => { if (!data[col]?.[id]) throw new Error('missing'); Object.assign(data[col][id], v); commit(col); },
+    delete: async () => { if (data[col]) delete data[col][id]; commit(col); },
+  }; };
+  return {
+    has: col => !!data[col],
+    doc: docRef,
+    collection: col => ({
+      add: async v => { (data[col] ??= {})[newId()] = { ...v }; commit(col); },
+      onSnapshot: cb => { (subs[col] ??= []).push(cb); cb({ docs: Object.entries(data[col] || {}).map(([id, v]) => ({ id, data: () => v })) }); },
+    }),
+    replace: (col, records) => { data[col] = Object.fromEntries(records.map(r => [newId(), r])); commit(col); },
+  };
 }
 
 /* ---------- boot ---------- */
 render();
 (async () => {
-  const use = window.claude?.use;
-  if (!use) { state.noDb = true; state.cal.status = 'off'; render(); return; }
-  claude.use('downloads').then(d => { state.downloads = d; render(); });
-  claude.use('mcp').then(mcp => {
-    if (!mcp) { state.cal.status = 'off'; render(); return; }
-    state.mcp = mcp;
-    mcp.watchTool(GCAL, 'list_events', CAL_INPUT, ev => ev.type === 'data' ? calResult(ev.result) : calError(ev.error), { refetchInterval: 300000 });
-  });
-  const db = await claude.use('db');
-  if (!db) { state.noDb = true; render(); return; }
+  state.downloads = browserDownloads;
+  calInit();
+  const db = localDb();
   state.db = db;
-  const sub = (col, key) => db.collection(col).onSnapshot(
-    snap => { state[key] = snap.docs.map(d => ({ id: d.id, ...d.data() })); state.ready[key] = true; render(); },
-    () => { toast('Lost connection to your saved data. Reload to reconnect.'); });
+  // First visit in this browser: fill from the CSV files in the repo.
+  for (const col of ['assignments', 'travel']) {
+    if (db.has(col)) continue;
+    try { db.replace(col, await loadCsv(col)); }
+    catch (e) { if (location.protocol === 'file:') state.noDb = true; else toast('Couldn’t read ' + CSV_FILES[col] + '.'); }
+  }
+  const sub = (col, key) => db.collection(col).onSnapshot(snap => { state[key] = snap.docs.map(d => ({ id: d.id, ...d.data() })); state.ready[key] = true; render(); });
   sub('assignments', 'a'); sub('travel', 't'); sub('countries', 'c');
 })();
 </script>
