@@ -1,0 +1,757 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Olivia’s Daily Planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Look: cream stationery, navy ink, Kelly green accent, blush details. Layout: one narrow column; home = two doorway cards, each section = summary strip, then a working list */
+:root{
+  --bg:#F7F1E3; --surface:#FFFCF5; --sunk:#EFE6D2; --ink:#14284B; --muted:#5F6578; --line:#DCCFB4;
+  --accent:#1B6B3F; --accent-ink:#FFFCF5; --accent-soft:#DCEBDD;
+  --blush:#E9C4C4; --blush-soft:#F6E3E1; --gold:#A8874A; --navy:#14284B;
+  --late:#8E2236; --late-soft:#F5DCDD; --soon:#8A6418; --soon-soft:#F3E7C8; --ok:#1B6B3F; --ok-soft:#DCEBDD;
+  --c-anatomy:#B4566E; --c-chemistry:#2B4C8C; --c-microbiology:#1B7A45; --c-other:#7A7466;
+  --f-display:"Cormorant Garamond", "Garamond", "Times New Roman", serif;
+  --f-body:"EB Garamond", "Garamond", Georgia, serif;
+  --f-mono:"EB Garamond", Georgia, serif;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1B2E; --surface:#16243B; --sunk:#1E2E48; --ink:#F2EBDA; --muted:#AEB3BF; --line:#2E4060;
+  --accent:#6FC08E; --accent-ink:#0F1B2E; --accent-soft:#1B3A30;
+  --blush:#C98F96; --blush-soft:#3A2632; --gold:#D2B57A; --navy:#F2EBDA;
+  --late:#F09AA6; --late-soft:#3E2030; --soon:#E3C27A; --soon-soft:#3A3120; --ok:#6FC08E; --ok-soft:#1B3A30;
+  --c-anatomy:#E79AAE; --c-chemistry:#8FAEEA; --c-microbiology:#6FC08E; --c-other:#B3AC9C;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1B2E; --surface:#16243B; --sunk:#1E2E48; --ink:#F2EBDA; --muted:#AEB3BF; --line:#2E4060;
+  --accent:#6FC08E; --accent-ink:#0F1B2E; --accent-soft:#1B3A30;
+  --blush:#C98F96; --blush-soft:#3A2632; --gold:#D2B57A; --navy:#F2EBDA;
+  --late:#F09AA6; --late-soft:#3E2030; --soon:#E3C27A; --soon-soft:#3A3120; --ok:#6FC08E; --ok-soft:#1B3A30;
+  --c-anatomy:#E79AAE; --c-chemistry:#8FAEEA; --c-microbiology:#6FC08E; --c-other:#B3AC9C;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:28px 64px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(2rem, 6vw, 3rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.35rem;font-weight:700}
+h3{font-size:1.05rem;font-weight:700}
+a{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.muted{color:var(--muted)}
+
+/* top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.home-link{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:700;padding:6px 12px 6px 8px;border-radius:999px;background:var(--sunk);color:var(--ink)}
+.home-link:hover{background:var(--accent-soft)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:700;font-size:.9rem}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* home */
+.doors{display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 320px), 1fr));gap:16px}
+.door{display:flex;flex-direction:column;gap:14px;padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:border-color .15s, transform .15s}
+.door:hover{border-color:var(--accent);transform:translateY(-2px)}
+.door .go{margin-top:auto;font-weight:700;color:var(--accent)}
+.door h2{font-size:1.6rem}
+.door ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.door li{display:flex;justify-content:space-between;gap:12px;font-size:.92rem}
+.door li span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.big{font-family:var(--f-display);font-size:2.6rem;font-weight:800;line-height:1}
+
+/* stats strip */
+.stats{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.stat{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--f-display);font-size:1.6rem;line-height:1.1}
+.stat small{color:var(--muted);font-size:.8rem}
+
+/* filters */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.88rem;display:inline-flex;gap:6px;align-items:center}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--cc, var(--c-other));display:inline-block;flex:none}
+
+/* assignment list */
+.group{display:flex;flex-direction:column;gap:6px}
+.group-h{display:flex;align-items:baseline;gap:10px;padding:0 2px}
+.group-h.late h3{color:var(--late)}
+.rows{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.row{display:grid;grid-template-columns:28px minmax(0,1fr) auto auto 28px;gap:12px;align-items:center;padding:10px 12px;border-top:1px solid var(--line);border-left:4px solid var(--cc, var(--c-other))}
+.row:first-child{border-top:0}
+.row.done .title{text-decoration:line-through;text-decoration-color:var(--muted);color:var(--muted)}
+.row input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);cursor:pointer;margin:0}
+.title{font-weight:700;min-width:0}
+.meta{font-size:.8rem;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.course{color:var(--cc);font-weight:700}
+.due{font-family:var(--f-mono);font-size:.82rem;text-align:right;white-space:nowrap}
+.pill{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
+.pill.late{background:var(--late-soft);color:var(--late)}
+.pill.soon{background:var(--soon-soft);color:var(--soon)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pts{display:flex;align-items:center;gap:4px;font-family:var(--f-mono);font-size:.85rem}
+.pts input{width:4.2em;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);text-align:right;font-family:var(--f-mono);font-size:.85rem}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;width:28px;height:28px;border-radius:6px;font-size:1rem;padding:0}
+.x:hover{background:var(--late-soft);color:var(--late)}
+.x.armed{background:var(--late);color:#fff;font-size:.7rem;width:auto;padding:0 6px}
+@media (max-width:620px){
+  .row{grid-template-columns:28px minmax(0,1fr) 28px;row-gap:6px}
+  .row .due{grid-column:2;text-align:left}
+  .row .pts{grid-column:2}
+  .row .x{grid-row:1;grid-column:3}
+}
+
+/* grade bars */
+.grades{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px}
+.grade{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.grade-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.track{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.fill{height:100%;background:var(--cc);border-radius:3px}
+
+/* forms */
+details.add{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:12px 16px}
+details.add summary{cursor:pointer;font-weight:700;color:var(--accent)}
+.form{display:grid;grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));gap:12px;margin-top:14px;align-items:end}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted);font-weight:700}
+.form input,.form select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:.95rem;color:var(--ink);font-weight:400;min-width:0;width:100%}
+
+/* travel */
+.trip{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.trip.past{opacity:.78}
+.trip-head{padding:18px 20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start;border-bottom:1px solid var(--line)}
+.trip-head h2{font-size:1.6rem}
+.legs{display:flex;flex-direction:column}
+.leg{display:grid;grid-template-columns:92px minmax(0,1fr) 28px;gap:14px;padding:12px 20px;border-top:1px solid var(--line);align-items:center}
+.leg:first-child{border-top:0}
+.leg-date{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);line-height:1.35}
+.leg-date b{display:block;color:var(--ink);font-size:.9rem}
+.route{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.iata{font-family:var(--f-mono);font-weight:600;font-size:1.15rem;letter-spacing:.04em}
+.arrow{color:var(--muted);font-size:.9rem}
+.times{font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+.kind{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--sunk);color:var(--muted)}
+.kind.flight{background:var(--accent-soft);color:var(--accent)}
+.empty{padding:28px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:var(--r)}
+@media (max-width:520px){.leg{grid-template-columns:minmax(0,1fr) 28px}.leg-date{grid-column:1/-1}}
+
+/* google calendar card */
+.cal{grid-column:1/-1;cursor:default}
+.cal:hover{transform:none;border-color:var(--line)}
+.cal-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.cal-days{display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 220px), 1fr));gap:14px 20px}
+.cal-day{display:flex;flex-direction:column;gap:6px;min-width:0}
+.cal-day h3{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cal-day.today h3{color:var(--accent)}
+.ev{display:grid;grid-template-columns:4.6em minmax(0,1fr);gap:8px;align-items:baseline;text-decoration:none;color:var(--ink);padding:6px 8px;border-radius:8px;background:var(--sunk);border-left:3px solid var(--cc, var(--c-other))}
+.ev:hover{background:var(--accent-soft)}
+.ev-time{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);white-space:nowrap}
+.ev-title{font-weight:700;font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-note{display:flex;flex-direction:column;gap:10px;align-items:flex-start;color:var(--muted)}
+/* world map (travel) */
+.globe{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:var(--r);padding:22px 22px 18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 0 0 4px var(--surface), 0 0 0 5px var(--line), 0 6px 18px -12px rgba(20,40,75,.35)}
+.globe-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.globe-pct{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.globe-pct b{font-family:var(--f-display);font-weight:600;font-size:3.2rem;line-height:1;color:var(--accent)}
+.map-box{min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-style:italic;background:var(--bg);border-radius:4px}
+.map-box svg{width:100%;height:auto;display:block}
+.map-box path{fill:var(--sunk);stroke:var(--surface);stroke-width:.4;cursor:pointer;transition:fill .15s}
+.map-box path.p{fill:var(--blush)}
+.map-box path.v{fill:var(--accent)}
+.map-box path:hover{fill:var(--gold)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.95rem;color:var(--muted);font-style:italic}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--sunk);border:1px solid var(--line)}
+.legend i.v{background:var(--accent);border-color:var(--accent)}
+.legend i.p{background:var(--blush);border-color:var(--blush)}
+.visited{display:flex;flex-wrap:wrap;gap:6px}
+.visited .chip{font-size:.92rem}
+.visited .chip .x2{color:var(--muted);font-size:.8rem}
+.country-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.country-form input{flex:1 1 200px;min-width:0;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);font-size:1rem}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:.9rem;max-width:calc(100% - 32px);z-index:20}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* ---------- stationery styling ---------- */
+body{font-size:17.5px;line-height:1.55;font-variant-numeric:lining-nums;
+  background:var(--bg) radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--gold) 14%, transparent) 1px, transparent 0) 0 0/22px 22px}
+h1{font-weight:600;letter-spacing:0;font-size:clamp(2.4rem, 7vw, 3.6rem)}
+h2,h3{font-weight:600;letter-spacing:.005em}
+h2{font-size:1.6rem}
+h3{font-size:1.2rem}
+.eyebrow{font-family:var(--f-body);font-weight:500;font-variant:small-caps;text-transform:lowercase;letter-spacing:.14em;font-size:.95rem;color:var(--gold)}
+.mono{font-variant-numeric:lining-nums tabular-nums}
+.big{font-weight:600;font-size:3rem;color:var(--navy)}
+a{text-underline-offset:3px}
+.door,.trip,.rows,.grade,.stats,details.add,.empty{border-radius:var(--r);box-shadow:0 0 0 4px var(--surface), 0 0 0 5px var(--line), 0 6px 18px -12px rgba(20,40,75,.35)}
+.doors{gap:26px}
+.door{padding:26px 26px 22px;border-color:var(--line);border-top:3px solid var(--accent)}
+.door:nth-child(2){border-top-color:var(--navy)}
+.door.cal{border-top-color:var(--blush)}
+.door:hover{border-color:var(--gold);border-top-color:var(--accent);transform:translateY(-2px)}
+.door:nth-child(2):hover{border-top-color:var(--navy)}
+.door.cal:hover{border-color:var(--line);border-top-color:var(--blush);transform:none}
+.door .go,.go{font-style:italic;font-weight:500;font-size:1.05rem}
+.door h2{font-size:1.9rem}
+.stat b{font-weight:600;font-size:2rem;color:var(--navy)}
+.stat small{font-style:italic;font-size:.95rem}
+.btn{border-radius:999px;font-weight:500;letter-spacing:.03em;padding:8px 18px;font-size:1rem}
+.btn.primary{background:var(--accent)}
+.home-link{font-weight:500;font-style:italic;background:var(--blush-soft);color:var(--ink)}
+.home-link:hover{background:var(--blush)}
+.chip{font-size:.98rem;border-color:var(--line);background:var(--surface)}
+.chip[aria-pressed="true"]{background:var(--navy);color:var(--bg);border-color:var(--navy)}
+.title{font-weight:600;font-size:1.05rem}
+.meta{font-size:.92rem;font-style:italic}
+.course{font-style:normal;font-variant:small-caps;letter-spacing:.06em;font-weight:600}
+.due{font-size:.98rem}
+.pill{font-family:var(--f-body);font-style:normal;font-weight:500;font-size:.82rem;letter-spacing:.04em}
+.pts,.pts input{font-size:1rem}
+.row{border-left-width:3px}
+.track{height:5px;background:var(--blush-soft)}
+.grade-top .mono{font-size:1.15rem;color:var(--navy)}
+.grade-score{display:flex;align-items:baseline;gap:8px}
+.letter{font-family:var(--f-display);font-weight:700;font-size:1.7rem;line-height:1;color:var(--cc)}
+.progress{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 0 4px var(--surface), 0 0 0 5px var(--line), 0 6px 18px -12px rgba(20,40,75,.35)}
+.progress-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.progress b{font-family:var(--f-display);font-weight:600;font-size:2.2rem;line-height:1;color:var(--navy)}
+.progress .track{height:12px;border-radius:999px}
+.progress .fill{border-radius:999px;background:linear-gradient(90deg, var(--blush), var(--accent))}
+details.add{border-style:solid;background:var(--blush-soft)}
+details.add summary{font-style:italic;font-weight:500;font-size:1.1rem}
+.form label{font-variant:small-caps;text-transform:lowercase;letter-spacing:.08em;font-weight:500;font-size:.95rem}
+.form input,.form select{background:var(--surface)}
+.trip{border-radius:var(--r)}
+.trip-head{background:linear-gradient(var(--blush-soft), var(--surface))}
+.trip-head h2{font-size:1.9rem}
+.iata{font-weight:600;font-size:1.25rem;letter-spacing:.12em}
+.kind{font-family:var(--f-body);font-weight:500;font-variant:small-caps;text-transform:lowercase;letter-spacing:.1em;font-size:.85rem;border-radius:999px;padding:1px 9px}
+.leg-date{font-size:.92rem}
+.leg-date b{font-size:1.05rem}
+.times{font-size:.95rem;font-style:italic}
+.cal-day h3{font-family:var(--f-body);font-variant:small-caps;text-transform:lowercase;font-weight:500;letter-spacing:.12em;font-size:1rem}
+.cal-day.today h3{color:var(--accent)}
+.ev{background:var(--bg);border-radius:4px}
+.ev:hover{background:var(--blush-soft)}
+.ev-time{font-size:.92rem;font-style:italic}
+.ev-title{font-weight:500;font-size:1.02rem}
+.empty{font-style:italic}
+.toast{font-family:var(--f-body);background:var(--navy);color:var(--bg);border-radius:999px;padding:10px 20px}
+</style>
+
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="lib/d3-array.min.js"></script>
+<script src="lib/d3-geo.min.js"></script>
+<script src="lib/topojson-client.min.js"></script>
+<script>
+const COURSE_COLORS = {anatomy:'var(--c-anatomy)', chemistry:'var(--c-chemistry)', microbiology:'var(--c-microbiology)'};
+const cc = c => COURSE_COLORS[(c||'').toLowerCase()] || 'var(--c-other)';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const DAY = 864e5;
+const today = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
+const parse = s => { if (!s) return null; const [m,d,y] = s.split('/').map(Number); return y ? new Date(y, m-1, d) : null; };
+const fmt = (d, o={weekday:'short', month:'short', day:'numeric'}) => d ? d.toLocaleDateString('en-US', o) : '';
+const days = d => Math.round((d - today) / DAY);
+const isoToUS = v => { if (!v) return ''; const [y,m,d] = v.split('-').map(Number); return `${m}/${d}/${y}`; };
+const mondayOf = d => { const x = new Date(d); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; };
+const num = v => v === '' || v == null || isNaN(Number(v)) ? null : Number(v);
+
+const state = { a: [], t: [], ready: { a:false, t:false }, db: null, downloads: null, noDb: false,
+  cal: { status:'loading', events:[], code:null, storedAt:null }, mcp: null, c: [],
+  course: 'All', status: 'todo' };
+
+function toast(msg){ const el = document.getElementById('toast'); el.textContent = msg; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 3200); }
+
+/* ---------- derived ---------- */
+function assignStatus(r){
+  if (r.submitted) return 'done';
+  const d = parse(r.due); if (!d) return 'open';
+  const n = days(d);
+  return n < 0 ? 'late' : n <= 7 ? 'soon' : 'open';
+}
+const sortedA = () => [...state.a].sort((x,y) => (parse(x.due)-parse(y.due)) || (x.order-y.order));
+function tripsSorted(){
+  const trips = state.t.filter(r => r.category === 'Trip').map(tr => {
+    const s = parse(tr.date), e = parse(tr.endDate) || s;
+    return {...tr, start:s, end:e, when: days(e) < 0 ? 'past' : days(s) <= 0 ? 'now' : 'upcoming'};
+  });
+  const up = trips.filter(t => t.when !== 'past').sort((a,b) => a.start-b.start);
+  const past = trips.filter(t => t.when === 'past').sort((a,b) => b.start-a.start);
+  return [...up, ...past];
+}
+const timeVal = t => { if (!t) return 0; const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i); if (!m) return 0; let h = +m[1] % 12; if (/pm/i.test(m[3])) h += 12; return h*60 + +m[2]; };
+const legsFor = name => state.t.filter(r => r.trip === name && r.category !== 'Trip')
+  .sort((a,b) => (parse(a.date)-parse(b.date)) || (timeVal(a.time)-timeVal(b.time)) || (a.order-b.order));
+
+/* ---------- views ---------- */
+function bar(title){
+  return `<div class="bar"><a class="home-link" href="#home">← Home</a>${title}</div>`;
+}
+function loadingOr(key, html){
+  if (state.noDb) return `<div class="empty">Your saved data isn't available in this view. Open the page in claude.ai while signed in to see and edit it.</div>`;
+  if (!state.ready[key]) return `<div class="empty">Loading your ${key === 'a' ? 'assignments' : 'trips'}…</div>`;
+  return html;
+}
+
+function viewHome(){
+  const open = state.a.filter(r => !r.submitted);
+  const late = open.filter(r => assignStatus(r) === 'late');
+  const next = sortedA().filter(r => !r.submitted && assignStatus(r) !== 'late').slice(0,4);
+  const trip = tripsSorted().find(t => t.when !== 'past');
+  return `
+  <header style="display:flex;flex-direction:column;gap:6px">
+    <span class="eyebrow">${esc(fmt(today, {weekday:'long', month:'long', day:'numeric', year:'numeric'}))}</span>
+    <h1>Olivia’s Daily Planner</h1>
+  </header>
+  <nav class="doors">
+    <a class="door" href="#assignments">
+      <span class="eyebrow">Assignment tracker</span>
+      <div style="display:flex;align-items:baseline;gap:10px"><span class="big">${state.ready.a ? open.length : '–'}</span><span class="muted">left to submit${late.length ? ` · <span style="color:var(--late);font-weight:700">${late.length} past due</span>` : ''}</span></div>
+      <ul>${next.map(r => `<li><span><span class="dot" style="--cc:${cc(r.course)}"></span> ${esc(r.assignment)}</span><span class="mono muted">${esc(fmt(parse(r.due), {month:'short', day:'numeric'}))}</span></li>`).join('')}</ul>
+      <span class="go">Open assignments →</span>
+    </a>
+    <a class="door" href="#travel">
+      <span class="eyebrow">Travel logistics</span>
+      ${trip ? `<div style="display:flex;align-items:baseline;gap:10px"><span class="big">${trip.when === 'now' ? 'Now' : days(trip.start)}</span><span class="muted">${trip.when === 'now' ? 'traveling' : days(trip.start) === 1 ? 'day until' : 'days until'} ${esc(trip.title)}</span></div>
+      <ul><li><span>${esc(trip.location)}</span><span class="mono muted">${esc(fmt(trip.start,{month:'short',day:'numeric'}))}–${esc(fmt(trip.end,{month:'short',day:'numeric'}))}</span></li>
+      <li><span>${legsFor(trip.trip).filter(l => l.category==='Flight').length} flights · ${legsFor(trip.trip).filter(l => l.category==='Hotel').length} stays booked</span><span></span></li></ul>`
+      : `<div class="muted">${state.ready.t ? 'No upcoming trips.' : 'Loading trips…'}</div>`}
+      <span class="go">Open travel →</span>
+    </a>
+    ${viewCalendar()}
+  </nav>`;
+}
+
+/* ---------- google calendar (home) ---------- */
+const GCAL = 'Google Calendar';
+const evStart = e => { if (e.start?.dateTime) return new Date(e.start.dateTime); if (!e.start?.date) return null; const [y,m,d] = e.start.date.split('-').map(Number); return new Date(y, m-1, d); };
+const evTime = e => e.start?.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) : 'All day';
+const evColor = e => { const t = (e.summary || '').toLowerCase(); const k = Object.keys(COURSE_COLORS).find(c => t.includes(c)); return k ? COURSE_COLORS[k] : 'var(--accent)'; };
+function viewCalendar(){
+  const c = state.cal;
+  const link = `<a class="go" href="https://calendar.google.com/calendar/r/week" target="_blank" rel="noopener">Open Google Calendar ↗</a>`;
+  let body;
+  if (c.status === 'off') body = `<div class="cal-note">Your calendar shows here when this planner is open in claude.ai while signed in.</div>`;
+  else if (c.status === 'loading') body = `<div class="cal-note">Loading this week’s events…</div>`;
+  else if (c.status === 'error') {
+    const msg = {
+      needs_reauth: 'Google Calendar needs to be reconnected. Reconnect it in claude.ai Settings → Connectors, then reload.',
+      server_not_connected: 'Google Calendar isn’t connected. Add it in claude.ai Settings → Connectors, then reload.',
+      selection_required: 'You have more than one Google Calendar connector. Pick one when claude.ai asks, then reload.',
+      not_in_manifest: 'Google Calendar is turned off for this planner. Turn it on from the artifact’s Permissions menu.',
+      blocked_by_policy: 'Your organization’s settings block Google Calendar here.',
+      approval_required: 'The planner needs your OK to read Google Calendar.',
+      server_unavailable: 'Google Calendar didn’t answer just now. It will try again shortly.',
+    }[c.code] || 'Couldn’t load your calendar right now.';
+    body = `<div class="cal-note"><span>${esc(msg)}</span>${c.code === 'approval_required' ? `<button class="btn primary" data-act="cal-allow">Show my calendar</button>` : ''}</div>`;
+  } else if (!c.events.length) body = `<div class="cal-note">Nothing on your calendar for the next 7 days.</div>`;
+  else {
+    const days = [];
+    for (const e of c.events){
+      const d = evStart(e); if (!d) continue;
+      const key = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      let g = days.find(g => +g.key === +key); if (!g) days.push(g = {key, rows: []}); g.rows.push(e);
+    }
+    body = `<div class="cal-days">${days.map(g => {
+      const n = Math.round((g.key - today)/DAY);
+      const label = n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : fmt(g.key);
+      return `<div class="cal-day ${n === 0 ? 'today' : ''}"><h3>${esc(label)}</h3>${g.rows.map(e => `
+        <a class="ev" style="--cc:${evColor(e)}" href="${esc(e.htmlLink || 'https://calendar.google.com')}" target="_blank" rel="noopener" title="${esc(e.summary || '(No title)')}${e.location ? ' · ' + esc(e.location) : ''}">
+          <span class="ev-time">${esc(evTime(e))}</span><span class="ev-title">${esc(e.summary || '(No title)')}</span></a>`).join('')}</div>`;
+    }).join('')}</div>`;
+  }
+  const stale = c.storedAt ? `<small class="muted">Updated ${esc(new Date(c.storedAt).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}))}</small>` : '';
+  return `<section class="door cal" aria-label="Google Calendar">
+    <div class="cal-head"><span class="eyebrow">Google Calendar · next 7 days</span>${stale}</div>
+    ${body}
+    ${link}
+  </section>`;
+}
+const CAL_INPUT = { orderBy: 'startTime', pageSize: 40 };
+function calResult(res){
+  const p = res?.payload || {};
+  state.cal = { status: 'ok', events: (p.events || []).filter(e => e.status !== 'cancelled'), code: null, storedAt: res?.cache?.storedAt || null };
+  render();
+}
+function calError(err){
+  const deny = ['needs_reauth','server_not_connected','blocked_by_policy','approval_required','not_in_manifest','selection_required','not_granted','capability_disabled','capability_removed'];
+  if (['not_granted','capability_disabled','capability_removed'].includes(err?.code)) { state.cal = { status:'off', events:[], code:null, storedAt:null }; render(); return; }
+  if (state.cal.status === 'ok' && !deny.includes(err?.code)) return; // keep last good data on transient errors
+  state.cal = { status: 'error', events: [], code: err?.code || 'upstream_error', storedAt: null };
+  render();
+}
+
+function viewAssignments(){
+  const courses = [...new Set(state.a.map(r => r.course).filter(Boolean))].sort();
+  const list = sortedA().filter(r => (state.course === 'All' || r.course === state.course) &&
+    (state.status === 'all' || (state.status === 'done' ? r.submitted : !r.submitted)));
+  const open = state.a.filter(r => !r.submitted);
+  const late = open.filter(r => assignStatus(r) === 'late').length;
+  const week = open.filter(r => assignStatus(r) === 'soon').length;
+  const donePct = state.a.length ? Math.round((state.a.length - open.length) / state.a.length * 100) : 0;
+  const letter = p => p >= 90 ? 'A' : p >= 80 ? 'B' : p >= 70 ? 'C' : p >= 60 ? 'D' : 'F';
+
+  // groups
+  const groups = [];
+  for (const r of list){
+    const st = assignStatus(r), d = parse(r.due);
+    let key, label;
+    if (st === 'late'){ key = 'late'; label = 'Past due'; }
+    else { const m = mondayOf(d); key = +m; const n = Math.round((m - mondayOf(today))/DAY/7);
+      label = n === 0 ? 'This week' : n === 1 ? 'Next week' : n === -1 ? 'Last week' : 'Week of ' + fmt(m, {month:'short', day:'numeric'}); }
+    let g = groups.find(g => g.key === key); if (!g) groups.push(g = {key, label, rows: []}); g.rows.push(r);
+  }
+  if (state.status === 'done') groups.reverse();
+
+  const grades = courses.map(c => {
+    const g = state.a.filter(r => r.course === c && num(r.earned) != null && num(r.possible) != null);
+    const e = g.reduce((s,r) => s + num(r.earned), 0), p = g.reduce((s,r) => s + num(r.possible), 0);
+    const done = state.a.filter(r => r.course === c && r.submitted).length, all = state.a.filter(r => r.course === c).length;
+    return {c, pct: p ? e/p*100 : null, e, p, done, all};
+  });
+
+  const row = r => {
+    const st = assignStatus(r), d = parse(r.due), n = d ? days(d) : null;
+    const pill = st === 'late' ? `<span class="pill late">${-n} day${-n===1?'':'s'} late</span>`
+      : st === 'soon' ? `<span class="pill soon">${n === 0 ? 'Due today' : n === 1 ? 'Due tomorrow' : 'In ' + n + ' days'}</span>`
+      : st === 'done' ? `<span class="pill ok">Submitted</span>` : '';
+    return `<div class="row ${r.submitted ? 'done' : ''}" style="--cc:${cc(r.course)}" data-id="${esc(r.id)}">
+      <input type="checkbox" id="sub-${esc(r.id)}" data-act="submit" ${r.submitted ? 'checked' : ''} aria-label="Submitted: ${esc(r.assignment)}">
+      <div style="min-width:0;display:flex;flex-direction:column;gap:2px">
+        <label class="title" for="sub-${esc(r.id)}">${esc(r.assignment)}</label>
+        <div class="meta"><span class="course">${esc(r.course)}</span>${r.scheduled ? `<span>Planned ${esc(fmt(parse(r.scheduled)))}</span>` : ''}${pill}</div>
+      </div>
+      <div class="due">Due ${esc(fmt(d))}</div>
+      <div class="pts"><input id="earn-${esc(r.id)}" data-act="earned" inputmode="decimal" value="${esc(r.earned)}" placeholder="–" aria-label="Points earned"><span class="muted">/</span><input id="poss-${esc(r.id)}" data-act="possible" inputmode="decimal" value="${esc(r.possible)}" placeholder="–" aria-label="Points possible"></div>
+      <button class="x" data-act="del" title="Delete assignment" aria-label="Delete ${esc(r.assignment)}">✕</button>
+    </div>`;
+  };
+
+  return `${bar(`<button class="btn" data-act="csv-a" ${state.downloads ? '' : 'hidden'}>Download CSV</button>`)}
+  <header style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">Fall 2026</span><h1>Assignment Tracker</h1></header>
+  ${loadingOr('a', `
+  <div class="stats">
+    <div class="stat"><b>${open.length}</b><small>left to submit</small></div>
+    <div class="stat"><b style="color:${late ? 'var(--late)' : 'inherit'}">${late}</b><small>past due</small></div>
+    <div class="stat"><b>${week}</b><small>due in the next 7 days</small></div>
+    <div class="stat"><b>${state.a.length - open.length}</b><small>submitted</small></div>
+  </div>
+  <section class="progress" aria-label="Semester progress">
+    <div class="progress-top"><span class="eyebrow">Semester progress</span><span class="muted" style="font-style:italic">${state.a.length - open.length} of ${state.a.length} assignments submitted</span></div>
+    <div><b>${donePct}%</b> <span class="muted">done with the semester</span></div>
+    <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${donePct}" aria-label="Semester progress"><div class="fill" style="width:${donePct}%"></div></div>
+  </section>
+  <section class="grades" aria-label="Points by course">${grades.map(g => `
+    <div class="grade" style="--cc:${cc(g.c)}">
+      <div class="grade-top"><h3><span class="dot"></span> ${esc(g.c)}</h3><span class="grade-score">${g.pct == null ? '' : `<span class="letter" aria-label="Letter grade ${letter(g.pct)}">${letter(g.pct)}</span>`}<span class="mono" style="font-weight:600">${g.pct == null ? '–' : g.pct.toFixed(1) + '%'}</span></span></div>
+      <div class="track"><div class="fill" style="width:${Math.min(100, g.pct || 0)}%"></div></div>
+      <small class="muted mono">${+g.e.toFixed(2)} / ${+g.p.toFixed(2)} pts · ${g.done}/${g.all} submitted</small>
+    </div>`).join('')}
+  </section>
+  <div class="filters" role="toolbar" aria-label="Filter assignments">
+    ${[['todo','To do'],['done','Submitted'],['all','All']].map(([k,l]) => `<button class="chip" data-act="status" data-v="${k}" aria-pressed="${state.status===k}">${l}</button>`).join('')}
+    <span class="sep"></span>
+    ${['All', ...courses].map(c => `<button class="chip" data-act="course" data-v="${esc(c)}" aria-pressed="${state.course===c}">${c==='All' ? '' : `<span class="dot" style="--cc:${cc(c)}"></span>`}${esc(c === 'All' ? 'All courses' : c)}</button>`).join('')}
+  </div>
+  ${groups.length ? groups.map(g => `<section class="group">
+    <div class="group-h ${g.key==='late' ? 'late' : ''}"><h3>${esc(g.label)}</h3><span class="muted" style="font-size:.85rem">${g.rows.length}</span></div>
+    <div class="rows">${g.rows.map(row).join('')}</div></section>`).join('')
+    : `<div class="empty">${state.a.length ? 'Nothing matches these filters.' : 'No assignments yet. Add your first one below.'}</div>`}
+  <details class="add" id="add-a">
+    <summary>Add an assignment</summary>
+    <form class="form" id="form-a">
+      <label style="grid-column:1/-1">Assignment<input id="na-name" required placeholder="e.g. Chapter 11 Problems"></label>
+      <label>Course<input id="na-course" list="course-list" required placeholder="Chemistry"><datalist id="course-list">${courses.map(c => `<option value="${esc(c)}">`).join('')}</datalist></label>
+      <label>Due date<input id="na-due" type="date" required></label>
+      <label>Planned to finish<input id="na-sched" type="date"></label>
+      <label>Points possible<input id="na-poss" inputmode="decimal" placeholder="10"></label>
+      <button class="btn primary" type="submit">Add assignment</button>
+    </form>
+  </details>`)}`;
+}
+
+function viewTravel(){
+  const trips = tripsSorted();
+  const leg = l => {
+    const d = parse(l.date), e = parse(l.endDate);
+    let main;
+    if (l.category === 'Flight'){
+      const [from, to] = l.title.split(/\s+to\s+/i);
+      main = `<div class="route"><span class="kind flight">Flight</span><span class="iata">${esc(from)}</span><span class="arrow">→</span><span class="iata">${esc(to || '')}</span></div>
+        <div class="times">${esc(l.time)}${l.arrival ? ' → ' + esc(l.arrival) : ''}${e && +e !== +d ? ' (+1)' : ''}${l.details ? ' · ' + esc(l.details) : ''}</div>`;
+    } else {
+      const nights = d && e ? Math.round((e - d)/DAY) : null;
+      main = `<div class="route"><span class="kind">${esc(l.category)}</span><strong>${esc(l.title)}</strong></div>
+        <div class="times">${nights ? `${nights} night${nights===1?'':'s'} · out ${esc(fmt(e))}` : ''}${l.location ? ' · ' + esc(l.location) : ''}${l.details ? ' · ' + esc(l.details) : ''}</div>`;
+    }
+    return `<div class="leg" data-id="${esc(l.id)}"><div class="leg-date"><b>${esc(fmt(d, {month:'short', day:'numeric'}))}</b>${esc(fmt(d, {weekday:'short'}))}</div><div style="min-width:0;display:flex;flex-direction:column;gap:4px">${main}</div><button class="x" data-act="del-t" title="Delete" aria-label="Delete ${esc(l.title)}">✕</button></div>`;
+  };
+  const tripNames = trips.map(t => t.trip);
+  return `${bar(`<button class="btn" data-act="csv-t" ${state.downloads ? '' : 'hidden'}>Download CSV</button>`)}
+  <header style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">Fall 2026</span><h1>Travel Logistics</h1></header>
+  ${loadingOr('t', `
+  ${viewWorld()}
+  ${trips.length ? trips.map(t => {
+    const legs = legsFor(t.trip), n = days(t.start), len = Math.round((t.end - t.start)/DAY);
+    const pill = t.when === 'past' ? `<span class="pill" style="background:var(--sunk);color:var(--muted)">Done</span>`
+      : t.when === 'now' ? `<span class="pill ok">Happening now</span>` : `<span class="pill soon">In ${n} day${n===1?'':'s'}</span>`;
+    return `<article class="trip ${t.when}">
+      <div class="trip-head">
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:0"><h2>${esc(t.title)}</h2><span class="muted">${esc(t.location)}${t.details ? ' · ' + esc(t.details) : ''}</span></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">${pill}<span class="mono muted" style="font-size:.82rem">${esc(fmt(t.start,{month:'short',day:'numeric'}))} – ${esc(fmt(t.end,{month:'short',day:'numeric'}))} · ${len} nights</span></div>
+      </div>
+      <div class="legs">${legs.length ? legs.map(leg).join('') : `<div class="leg"><span></span><span class="muted">No flights or stays added yet.</span><span></span></div>`}</div>
+    </article>`; }).join('')
+    : `<div class="empty">No trips yet. Add one below with the category “Trip”.</div>`}
+  <details class="add" id="add-t">
+    <summary>Add a flight, stay or trip</summary>
+    <form class="form" id="form-t">
+      <label>Trip<input id="nt-trip" list="trip-list" required placeholder="Morocco"><datalist id="trip-list">${tripNames.map(c => `<option value="${esc(c)}">`).join('')}</datalist></label>
+      <label>Category<select id="nt-cat"><option>Flight</option><option>Hotel</option><option>Trip</option><option>Activity</option></select></label>
+      <label style="grid-column:1/-1">Title<input id="nt-title" required placeholder="AUS to DFW, or a hotel name"></label>
+      <label>Date<input id="nt-date" type="date" required></label>
+      <label>End date<input id="nt-end" type="date"></label>
+      <label>Departs<input id="nt-time" placeholder="5:33 PM"></label>
+      <label>Arrives<input id="nt-arr" placeholder="6:54 PM"></label>
+      <label>Location<input id="nt-loc" placeholder="Marrakech, Morocco"></label>
+      <label>Details<input id="nt-det" placeholder="Airline · flight no."></label>
+      <button class="btn primary" type="submit">Add</button>
+    </form>
+  </details>`)}`;
+}
+
+/* ---------- render / routing ---------- */
+/* ---------- world map (travel) ---------- */
+// 193 UN members + Vatican City + Palestine. Map names that differ are renamed by MAP_RENAME.
+const SOVEREIGN = ['Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda','Argentina','Armenia','Australia','Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bhutan','Bolivia','Bosnia and Herzegovina','Botswana','Brazil','Brunei','Bulgaria','Burkina Faso','Burundi','Cabo Verde','Cambodia','Cameroon','Canada','Central African Republic','Chad','Chile','China','Colombia','Comoros','Republic of the Congo','Costa Rica','Croatia','Cuba','Cyprus','Czechia',"Côte d'Ivoire",'DR Congo','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Eritrea','Estonia','Eswatini','Ethiopia','Fiji','Finland','France','Gabon','Gambia','Georgia','Germany','Ghana','Greece','Grenada','Guatemala','Guinea','Guinea-Bissau','Guyana','Haiti','Honduras','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Jamaica','Japan','Jordan','Kazakhstan','Kenya','Kiribati','Kuwait','Kyrgyzstan','Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Marshall Islands','Mauritania','Mauritius','Mexico','Micronesia','Moldova','Monaco','Mongolia','Montenegro','Morocco','Mozambique','Myanmar','Namibia','Nauru','Nepal','Netherlands','New Zealand','Nicaragua','Niger','Nigeria','North Korea','North Macedonia','Norway','Oman','Pakistan','Palau','Palestine','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Rwanda','Saint Kitts and Nevis','Saint Lucia','Saint Vincent and the Grenadines','Samoa','San Marino','São Tomé and Príncipe','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','Solomon Islands','Somalia','South Africa','South Korea','South Sudan','Spain','Sri Lanka','Sudan','Suriname','Sweden','Switzerland','Syria','Tajikistan','Tanzania','Thailand','Timor-Leste','Togo','Tonga','Trinidad and Tobago','Tunisia','Turkey','Turkmenistan','Tuvalu','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Vanuatu','Vatican City','Venezuela','Vietnam','Yemen','Zambia','Zimbabwe'];
+const SOV = new Set(SOVEREIGN);
+const MAP_RENAME = {'Antigua and Barb.':'Antigua and Barbuda','Bosnia and Herz.':'Bosnia and Herzegovina','Central African Rep.':'Central African Republic','Congo':'Republic of the Congo','Dem. Rep. Congo':'DR Congo','Dominican Rep.':'Dominican Republic','Eq. Guinea':'Equatorial Guinea','eSwatini':'Eswatini','Macedonia':'North Macedonia','Marshall Is.':'Marshall Islands','S. Sudan':'South Sudan','Solomon Is.':'Solomon Islands','St. Kitts and Nevis':'Saint Kitts and Nevis','St. Vin. and Gren.':'Saint Vincent and the Grenadines','São Tomé and Principe':'São Tomé and Príncipe','United States of America':'United States','Vatican':'Vatican City','Faeroe Is.':'Faroe Islands','Cayman Is.':'Cayman Islands','Cook Is.':'Cook Islands','Falkland Is.':'Falkland Islands','Fr. Polynesia':'French Polynesia','British Virgin Is.':'British Virgin Islands','U.S. Virgin Is.':'U.S. Virgin Islands','Turks and Caicos Is.':'Turks and Caicos Islands','N. Mariana Is.':'Northern Mariana Islands','W. Sahara':'Western Sahara','N. Cyprus':'Northern Cyprus','St-Barthélemy':'Saint Barthélemy','St-Martin':'Saint Martin'};
+const US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming','Washington DC','Washington, D.C.'];
+// Extra words that point at a country when trips name a city or region instead.
+const ALIASES = {'United States':['USA','U.S.A.','U.S.','United States of America','America',...US_STATES,'NYC','Los Angeles','Chicago','Miami','Austin','Nashville','Boston','Seattle','San Francisco'],
+  'United Kingdom':['UK','U.K.','Great Britain','Britain','England','Scotland','Wales','Northern Ireland','London','Edinburgh','Manchester','Liverpool','Oxford'],
+  'France':['Paris','Nice','Lyon','Provence'],'Italy':['Rome','Florence','Venice','Milan','Amalfi','Tuscany','Sicily','Sardinia'],'Spain':['Madrid','Barcelona','Seville','Ibiza','Mallorca'],
+  'Greece':['Athens','Santorini','Mykonos'],'Mexico':['Cancun','Cancún','Tulum','Cabo','Mexico City','Playa del Carmen'],'Netherlands':['Amsterdam','Holland'],'Portugal':['Lisbon','Porto'],
+  'Morocco':['Marrakech','Marrakesh','Casablanca','Fez','Fes'],'Dominican Republic':['Punta Cana','Cap Cana','Santo Domingo'],'Japan':['Tokyo','Kyoto','Osaka'],'Ireland':['Dublin'],
+  'Czechia':['Czech Republic','Prague'],'Turkey':['Türkiye','Istanbul'],'Canada':['Toronto','Vancouver','Montreal'],'Germany':['Berlin','Munich'],'Austria':['Vienna'],'Switzerland':['Zurich','Geneva'],
+  'United Arab Emirates':['UAE','Dubai','Abu Dhabi'],'Bahamas':['Nassau','The Bahamas'],'Costa Rica':['San José'],'Iceland':['Reykjavik'],'Thailand':['Bangkok','Phuket'],'Peru':['Lima','Cusco','Machu Picchu'],
+  'Eswatini':['Swaziland'],'Myanmar':['Burma'],'Cabo Verde':['Cape Verde'],"Côte d'Ivoire":['Ivory Coast'],'Timor-Leste':['East Timor'],'DR Congo':['Democratic Republic of the Congo'],'Vatican City':['Vatican'],'South Korea':['Korea','Seoul'],'Russia':['Russian Federation']};
+const TERMS = (() => {
+  const t = [];
+  for (const n of SOVEREIGN) if (n !== 'Georgia') t.push([n, n]); // "Georgia" alone reads as the US state
+  for (const [c, list] of Object.entries(ALIASES)) for (const a of list) t.push([a, c]);
+  t.push(['Republic of Georgia', 'Georgia'], ['Tbilisi', 'Georgia'], ['Puerto Rico', 'Puerto Rico'], ['Hong Kong', 'Hong Kong']);
+  return t.sort((a,b) => b[0].length - a[0].length)
+    .map(([term, c]) => [new RegExp('(^|[^\\p{L}])' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![\\p{L}])', 'giu'), c]);
+})();
+function detectCountries(text){
+  let t = ' ' + (text || '') + ' '; const found = new Set();
+  for (const [re, c] of TERMS){ re.lastIndex = 0; if (re.test(t)) { found.add(c); re.lastIndex = 0; t = t.replace(re, '$1 '); } }
+  return found;
+}
+const slug = n => n.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+function countryStatus(){
+  const auto = new Map(); // name -> 'visited' | 'planned'
+  for (const tr of tripsSorted()){
+    const kind = tr.when === 'upcoming' ? 'planned' : 'visited';
+    const text = [tr.trip, tr.title, tr.location, ...legsFor(tr.trip).map(l => l.location)].join(' | ');
+    for (const c of detectCountries(text)) if (kind === 'visited' || !auto.has(c)) auto.set(c, kind);
+  }
+  const over = new Map(state.c.filter(r => r.name).map(r => [r.name, !!r.visited]));
+  const visited = new Set(), planned = new Set();
+  for (const [c, k] of auto) if (k === 'visited' && over.get(c) !== false) visited.add(c);
+  for (const [c, v] of over) if (v) visited.add(c);
+  for (const [c, k] of auto) if (k === 'planned' && !visited.has(c) && over.get(c) !== false) planned.add(c);
+  return { auto, visited, planned };
+}
+const MAP = { status: 'idle', svg: null, area: {}, total: 0, names: [] };
+async function loadMap(){
+  MAP.status = 'loading';
+  try {
+    const res = await fetch('lib/countries-50m.json'); if (!res.ok) throw new Error(res.status);
+    const topo = await res.json();
+    const feats = topojson.feature(topo, topo.objects.countries).features.filter(f => f.properties.name !== 'Antarctica');
+    const proj = d3.geoNaturalEarth1().fitExtent([[4, 4], [956, 486]], { type: 'FeatureCollection', features: feats });
+    const path = d3.geoPath(proj), NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 960 490'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'World map of countries visited');
+    for (const f of feats){
+      const name = MAP_RENAME[f.properties.name] || f.properties.name;
+      const a = d3.geoArea(f); MAP.area[name] = (MAP.area[name] || 0) + a; MAP.total += a;
+      const el = document.createElementNS(NS, 'path');
+      el.setAttribute('d', path(f)); el.dataset.act = 'map'; el.dataset.v = name;
+      const title = document.createElementNS(NS, 'title'); title.textContent = name; el.appendChild(title);
+      svg.appendChild(el);
+    }
+    MAP.names = [...new Set([...SOVEREIGN, ...Object.keys(MAP.area)])].sort((a,b) => a.localeCompare(b));
+    MAP.svg = svg; MAP.status = 'ready';
+  } catch (e) { MAP.status = 'error'; }
+  render(); mountMap();
+}
+function mountMap(){
+  const box = document.getElementById('worldmap'); if (!box) return;
+  if (MAP.status === 'idle') { loadMap(); return; }
+  if (MAP.status === 'error') { box.textContent = 'The map couldn’t load. Reload the page to try again.'; return; }
+  if (MAP.status !== 'ready') return;
+  if (MAP.svg.parentNode !== box) box.replaceChildren(MAP.svg);
+  const { visited, planned } = countryStatus();
+  for (const el of MAP.svg.children){ const n = el.dataset.v; el.classList.toggle('v', visited.has(n)); el.classList.toggle('p', planned.has(n)); }
+}
+function viewWorld(){
+  const { visited, planned } = countryStatus();
+  const sov = [...visited].filter(c => SOV.has(c)).sort((a,b) => a.localeCompare(b));
+  const other = [...visited].filter(c => !SOV.has(c)).sort((a,b) => a.localeCompare(b));
+  const pct = sov.length / SOVEREIGN.length * 100;
+  const land = MAP.status === 'ready' && MAP.total ? sov.reduce((s,c) => s + (MAP.area[c] || 0), 0) / MAP.total * 100 : null;
+  const chip = c => `<button class="chip" data-act="country" data-v="${esc(c)}" title="Remove ${esc(c)}">${esc(c)}${SOV.has(c) ? '' : ' <span class="muted">(territory)</span>'} <span class="x2">✕</span></button>`;
+  return `<section class="globe" aria-label="Countries visited">
+    <div class="globe-head">
+      <div style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">Where I’ve been</span>
+        <div class="globe-pct"><b>${pct < 10 ? pct.toFixed(1) : Math.round(pct)}%</b><span class="muted">of the world’s countries</span></div></div>
+      <span class="muted" style="font-style:italic">${sov.length} of ${SOVEREIGN.length} countries${land == null ? '' : ` · ${land < 10 ? land.toFixed(1) : Math.round(land)}% of the world’s land`}</span>
+    </div>
+    <div class="map-box" id="worldmap">Loading the map…</div>
+    <div class="legend"><span><i class="v"></i>Visited</span><span><i class="p"></i>Upcoming trip</span><span><i></i>Not yet</span></div>
+    ${visited.size ? `<div class="visited">${[...sov, ...other].map(chip).join('')}</div>` : ''}
+    <form class="country-form" id="form-c">
+      <input id="nc-name" list="country-names" placeholder="Add a country you’ve been to" aria-label="Country name" autocomplete="off">
+      <datalist id="country-names">${(MAP.names.length ? MAP.names : SOVEREIGN).map(n => `<option value="${esc(n)}">`).join('')}</datalist>
+      <button class="btn" type="submit">Mark as visited</button>
+    </form>
+    <small class="muted" style="font-style:italic">Countries fill in from your trips once each trip begins. Tap any country on the map to add or remove it.</small>
+  </section>`;
+}
+async function setVisited(name, on){
+  const { auto } = countryStatus();
+  const ref = state.db?.doc('countries/' + slug(name));
+  const isAuto = auto.get(name) === 'visited';
+  const ok = on ? `Added ${name}` : `Removed ${name}`;
+  if (on === isAuto) return write(() => ref.delete(), ok);
+  return write(() => ref.set({ name, visited: on }), ok);
+}
+
+const VIEWS = { home: viewHome, assignments: viewAssignments, travel: viewTravel };
+let pending = false;
+function currentView(){ const h = (location.hash || '').slice(1); return VIEWS[h] ? h : 'home'; }
+function render(){
+  const app = document.getElementById('app');
+  const ae = document.activeElement;
+  if (ae && app.contains(ae) && ae.matches('.pts input, form input, form select')) { pending = true; return; }
+  const openA = document.getElementById('add-a')?.open, openT = document.getElementById('add-t')?.open;
+  app.innerHTML = VIEWS[currentView()]();
+  if (openA && document.getElementById('add-a')) document.getElementById('add-a').open = true;
+  if (openT && document.getElementById('add-t')) document.getElementById('add-t').open = true;
+  mountMap();
+}
+document.addEventListener('focusout', () => setTimeout(() => { if (pending && !document.getElementById('app').contains(document.activeElement)) { pending = false; render(); } }, 0));
+window.addEventListener('hashchange', () => { pending = false; render(); window.scrollTo(0,0); });
+
+/* ---------- writes ---------- */
+async function write(fn, ok){
+  if (!state.db) { toast('Changes can’t be saved in this view.'); return false; }
+  try { await fn(); if (ok) toast(ok); return true; }
+  catch(e){ toast(e?.code === 'invalid_argument' ? 'You don’t have permission to edit this planner.' : 'Couldn’t save that change. Try again.'); render(); return false; }
+}
+const nextOrder = arr => arr.reduce((m,r) => Math.max(m, r.order || 0), 0) + 1;
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'status') { state.status = b.dataset.v; render(); }
+  else if (act === 'course') { state.course = b.dataset.v; render(); }
+  else if (act === 'del' || act === 'del-t') {
+    if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Delete?'; setTimeout(() => { if (b.isConnected) { b.classList.remove('armed'); b.textContent = '✕'; } }, 3000); return; }
+    const id = b.closest('[data-id]').dataset.id;
+    await write(() => state.db.doc((act === 'del' ? 'assignments/' : 'travel/') + id).delete(), 'Deleted');
+  }
+  else if (act === 'map' || act === 'country') {
+    const name = b.dataset.v;
+    await setVisited(name, act === 'map' ? !countryStatus().visited.has(name) : false);
+  }
+  else if (act === 'cal-allow' && state.mcp) {
+    b.disabled = true;
+    try { calResult(await state.mcp.callTool(GCAL, 'list_events', CAL_INPUT)); } catch(err){ calError(err); }
+  }
+  else if (act === 'csv-a') saveCsv('Assignment Tracker - Assignments.csv', csvAssignments());
+  else if (act === 'csv-t') saveCsv('travel.csv', csvTravel());
+});
+document.addEventListener('change', async e => {
+  const el = e.target, row = el.closest('.row[data-id]'); if (!row) return;
+  const id = row.dataset.id, act = el.dataset.act;
+  if (act === 'submit') await write(() => state.db.doc('assignments/' + id).update({ submitted: el.checked }), el.checked ? 'Marked as submitted' : 'Marked as not submitted');
+  if (act === 'earned' || act === 'possible') await write(() => state.db.doc('assignments/' + id).update({ [act]: el.value.trim() }), 'Points saved');
+});
+document.addEventListener('submit', async e => {
+  e.preventDefault();
+  const v = id => document.getElementById(id).value.trim();
+  if (e.target.id === 'form-a') {
+    const data = { assignment: v('na-name'), course: v('na-course'), due: isoToUS(v('na-due')), scheduled: isoToUS(v('na-sched')),
+      submitted: false, earned: '', possible: v('na-poss'), order: nextOrder(state.a) };
+    const ok = await write(() => state.db.collection('assignments').add(data), 'Assignment added');
+    if (ok) e.target.reset();
+  }
+  if (e.target.id === 'form-c') {
+    const typed = v('nc-name').toLowerCase();
+    const name = (MAP.names.length ? MAP.names : SOVEREIGN).find(n => n.toLowerCase() === typed)
+      || [...detectCountries(v('nc-name'))][0];
+    if (!name) { toast('Pick a country from the list.'); return; }
+    if (countryStatus().visited.has(name)) { toast(name + ' is already on your map.'); return; }
+    const ok = await setVisited(name, true);
+    if (ok) e.target.reset();
+  }
+  if (e.target.id === 'form-t') {
+    const data = { trip: v('nt-trip'), category: v('nt-cat'), title: v('nt-title'), date: isoToUS(v('nt-date')), endDate: isoToUS(v('nt-end')),
+      time: v('nt-time'), arrival: v('nt-arr'), location: v('nt-loc'), details: v('nt-det'), order: nextOrder(state.t) };
+    const ok = await write(() => state.db.collection('travel').add(data), 'Added to ' + data.trip);
+    if (ok) e.target.reset();
+  }
+  pending = false; render();
+});
+
+/* ---------- CSV export (same layout as the original files) ---------- */
+const cell = v => { v = String(v ?? ''); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+function csvAssignments(){
+  const lines = [',,,,,,,', ',Assignment,Course,Due Date,Scheduled Completion Date,Submitted?,Points Earned,Points Possible'];
+  for (const r of sortedA()) lines.push(['', r.assignment, r.course, r.due, r.scheduled, r.submitted ? 'TRUE' : 'FALSE', r.earned, r.possible].map(cell).join(','));
+  return lines.join('\n') + '\n';
+}
+function csvTravel(){
+  const lines = ['Trip,Category,Title,Date,End Date,Time,Arrival Time,Location,Details'];
+  for (const r of [...state.t].sort((a,b) => a.order - b.order)) lines.push([r.trip, r.category, r.title, r.date, r.endDate, r.time, r.arrival, r.location, r.details].map(cell).join(','));
+  return lines.join('\n') + '\n';
+}
+async function saveCsv(filename, data){
+  try { await state.downloads.save({ filename, data }); toast('Saved ' + filename); }
+  catch(e){ if (e?.code !== 'declined') toast('Couldn’t save the file here.'); }
+}
+
+/* ---------- boot ---------- */
+render();
+(async () => {
+  const use = window.claude?.use;
+  if (!use) { state.noDb = true; state.cal.status = 'off'; render(); return; }
+  claude.use('downloads').then(d => { state.downloads = d; render(); });
+  claude.use('mcp').then(mcp => {
+    if (!mcp) { state.cal.status = 'off'; render(); return; }
+    state.mcp = mcp;
+    mcp.watchTool(GCAL, 'list_events', CAL_INPUT, ev => ev.type === 'data' ? calResult(ev.result) : calError(ev.error), { refetchInterval: 300000 });
+  });
+  const db = await claude.use('db');
+  if (!db) { state.noDb = true; render(); return; }
+  state.db = db;
+  const sub = (col, key) => db.collection(col).onSnapshot(
+    snap => { state[key] = snap.docs.map(d => ({ id: d.id, ...d.data() })); state.ready[key] = true; render(); },
+    () => { toast('Lost connection to your saved data. Reload to reconnect.'); });
+  sub('assignments', 'a'); sub('travel', 't'); sub('countries', 'c');
+})();
+</script>
+
+</body></html>

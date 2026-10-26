@@ -1,0 +1,18 @@
+Trip,Category,Title,Date,End Date,Time,Arrival Time,Location,Details
+Morocco,Trip,Morocco,10/9/2026,10/18/2026,,,Morocco & London,
+Dominican Republic,Trip,Dominican Republic,11/11/2026,11/15/2026,,,"Cap Cana, Dominican Republic",
+North Carolina,Trip,North Carolina,9/4/2026,9/7/2026,,,Western North Carolina,Labor Day weekend
+Morocco,Flight,AUS to DFW,10/9/2026,,5:33 PM,6:54 PM,,American · BA 1683
+Morocco,Flight,DFW to MAD,10/9/2026,10/10/2026,9:45 PM,2:25 PM,,American · BA 4296
+Morocco,Flight,MAD to RAK,10/10/2026,,4:00 PM,5:05 PM,,BA 7117
+Morocco,Flight,RAK to LHR,10/17/2026,,4:40 PM,9:10 PM,,British Airways · BA 715
+Morocco,Flight,LHR to DFW,10/18/2026,,12:55 PM,5:05 PM,,British Airways · BA 193
+Morocco,Flight,DFW to AUS,10/18/2026,,7:00 PM,8:05 PM,,American · BA 1899
+Morocco,Hotel,Hostel ADI,10/10/2026,10/12/2026,,,"Marrakech, Morocco",
+Morocco,Hotel,BE Marrakech Riad,10/12/2026,10/15/2026,,,"Marrakech, Morocco",
+Morocco,Hotel,BE Agafay,10/15/2026,10/17/2026,,,"Agafay Desert, Morocco",
+Morocco,Hotel,Hub Premier Inn Westminster Abbey,10/17/2026,10/18/2026,,,"London, England",Overnight layover
+North Carolina,Flight,AUS to AVL,9/4/2026,,3:14 PM,6:36 PM,,Allegiant · G4 233
+North Carolina,Flight,AVL to AUS,9/7/2026,,10:15 AM,11:48 AM,,Allegiant · G4 228
+North Carolina,Hotel,Family home,9/4/2026,9/7/2026,,,Western North Carolina,Stayed with my grandparents
+Dominican Republic,Hotel,Sanctuary Cap Cana,11/11/2026,11/15/2026,,,"Cap Cana, Dominican Republic",
